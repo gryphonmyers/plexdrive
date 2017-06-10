@@ -22,6 +22,34 @@ _If you like the project, feel free to make a small [donation via PayPal](https:
 ```
 ./plexdrive -m localhost /path/to/my/mount
 ```
+## Running as a systemd service
+Place the binary somewhere appropriate and make sure it's executable:
+```
+sudo mv ./plexdrive /usr/bin/plexdrive
+sudo chmod 755 /usr/bin/plexdrive
+sudo chown root:root /usr/bin/plexdrive
+```
+Now place the following into a systemd service file (why not call it plexdrive.service) in the correct location for your distro (for CentOS7 this is /etc/systemd/system).
+```
+[Unit]
+Description=Plexdrive
+AssertPathIsDirectory=/path/to/my/mount
+Wants=mongod.service
+After=network-online.target mongod.service
+
+[Service]
+Type=simple
+User=plexdrive
+ExecStart=/usr/bin/plexdrive -m localhost /path/to/my/mount -v 2
+ExecStop=/bin/fusermount -u /path/to/my/mount
+Restart=on-abort
+
+[Install]
+WantedBy=default.target
+```
+Depending on your distro and how you installed MongoDB, the name of your MongoDB service may vary - just make sure the entries under "Wants" and "After" both match the correct name of your mongoDB service.
+
+Please change your mount path, options and executing user to your liking.
 
 ### Crypted mount with rclone
 You can use [this tutorial](TUTORIAL.md) for instruction how to mount an encrypted rclone mount.
